@@ -1,1 +1,7 @@
-["latest"]
+[
+  {
+    "name": "latest",
+    "version": "latest",
+    "url": "https://schroedtert.github.io/gh-pages-test/latest"
+  }
+]
