@@ -37,7 +37,7 @@ jobs:
           m = re.match(r'^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(-dev\.[0-9]+)?)$',
                        github_ref)
           if m:
-              target = m.group(1)
+              target = "${{ github.ref_name }}"
           elif github_ref == 'refs/heads/main':
               target = 'latest'
           else:
@@ -53,6 +53,7 @@ jobs:
         publish_dir: docs/build
         destination_dir: ${{ steps.docs-publish-dir.outputs.target }}
         keep_files: false
+
     outputs:
       docs-target: ${{ steps.docs-publish-dir.outputs.target }}
 
@@ -81,18 +82,18 @@ jobs:
           versions_url = [dict(name=version, version=version, url= prefix + version)
                for version in versions]
 
-          target_dir = Path('gh-pages')
-          target_dir.mkdir(parents=True)
-          target_file = target_dir /'versions.json'
-          
-          print(json.dumps(versions_url, indent=2))
-          print(target_file)
+          target_file = Path('versions.json')
           with target_file.open('w') as f:
               json.dump(versions_url, f)
 
-    - name: Publish versions JSON to GitHub pages
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Redirect stable to new release
+      if: needs.docs.outputs.docs-target != ''
+      run: |
+        rm -rf stable
+        ln -s ${{needs.docs.outputs.docs-target}} stable
+
+    - name: Update files in gh-pages branch
+      uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: gh-pages
-        keep_files: true
+        branch: gh-pages
+        commit_message: Update versions and stable
