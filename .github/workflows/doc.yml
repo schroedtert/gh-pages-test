@@ -53,9 +53,18 @@ jobs:
         publish_dir: docs/build
         destination_dir: ${{ steps.docs-publish-dir.outputs.target }}
         keep_files: false
+
+    - name: Redirect stable to new release
+      if: steps.docs-publish-dir.outputs.target != '' && steps.docs-publish-dir.outputs.target != 'latest'
+      run: |
+        echo "Redirecting stable to newly released version " {{steps.docs-publish-dir.outputs.target}}
+        rm -rf stable
+        ln -s {{steps.docs-publish-dir.outputs.target}} stable
+        git add stable
+        git commit -m "redirect stable to new version $RELEASE_VERSION"
+
     outputs:
       docs-target: ${{ steps.docs-publish-dir.outputs.target }}
-
 
   docs-versions:
     name: Update docs versions JSON
