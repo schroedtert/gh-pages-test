@@ -29,12 +29,18 @@ exclude_patterns = []
 html_theme = "sphinx_book_theme"
 html_static_path = ["_static"]
 html_context = {"default_mode": "light"}
+html_js_files = ['versions.js']
 
 html_theme_options = {
+    "switcher" : {
+        "json_url": "../version.json",
+        "version_match": "latest"
+    },
     "home_page_in_toc": False,
     "use_fullscreen_button": False,
     "use_issues_button": False,
     "use_download_button": False,
+    "footer_start": ["version-switcher"],
 }
 
 # -- Options for EPUB output
