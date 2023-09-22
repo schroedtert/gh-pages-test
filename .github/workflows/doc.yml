@@ -1,0 +1,58 @@
+name: Build documentation
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Build docs
+      run: |
+        python3 -m pip install -r docs/requirements.txt
+        sphinx-build docs/source docs/build -j$(nproc)
+
+    - name: Determine directory to publish docs to
+      id: docs-publish-dir
+      uses: jannekem/run-python-script-action@v1
+      with:
+        script: |
+          import os, re
+          github_ref = os.environ.get('GITHUB_REF')
+          m = re.match(r'^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(-dev\.[0-9]+)?)$',
+                       github_ref)
+          if m:
+              target = m.group(1)
+          elif github_ref == 'refs/heads/main':
+              target = 'latest'
+          else:
+              target = ''
+          print(target)
+          set_output('target', target)
+
+    - name: Publish docs to GitHub pages
+      if: steps.docs-publish-dir.outputs.target != ''
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/build
+        destination_dir: ${{ steps.docs-publish-dir.outputs.target }}
+        keep_files: false
+    outputs:
+      docs-target: ${{ steps.docs-publish-dir.outputs.target }}
+
