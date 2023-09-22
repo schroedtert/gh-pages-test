@@ -37,7 +37,7 @@ jobs:
           m = re.match(r'^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+(-dev\.[0-9]+)?)$',
                        github_ref)
           if m:
-              target = m.group(1)
+              target = "${{ github.ref_name }}"
           elif github_ref == 'refs/heads/main':
               target = 'latest'
           else:
@@ -53,6 +53,7 @@ jobs:
         publish_dir: docs/build
         destination_dir: ${{ steps.docs-publish-dir.outputs.target }}
         keep_files: false
+
     outputs:
       docs-target: ${{ steps.docs-publish-dir.outputs.target }}
 
@@ -89,6 +90,14 @@ jobs:
           print(target_file)
           with target_file.open('w') as f:
               json.dump(versions_url, f)
+
+    - name: Redirect stable to new release
+      if: needs.docs.outputs.docs-target != '' && needs.docs.outputs.docs-target != 'latest'
+      run: |
+        echo "Redirecting stable to newly released version " ${{needs.docs.outputs.docs-target}}
+        rm -rf gh-pages/stable
+        tree
+        ln -s ${{needs.docs.outputs.docs-target}} gh-pages/stable
 
     - name: Publish versions JSON to GitHub pages
       uses: peaceiris/actions-gh-pages@v3
