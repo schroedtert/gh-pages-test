@@ -55,3 +55,41 @@ jobs:
         keep_files: false
     outputs:
       docs-target: ${{ steps.docs-publish-dir.outputs.target }}
+
+
+  docs-versions:
+    name: Update docs versions JSON
+    needs: docs
+    if: needs.docs.outputs.docs-target != ''
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+    - name: Write versions to JSON file
+      uses: jannekem/run-python-script-action@v1
+      with:
+        script: |
+          import json
+          from pathlib import Path
+
+          prefix = "https://schroedtert.github.io/gh-pages-test/" 
+          cwd = Path.cwd()
+          versions = sorted((item.name for item in cwd.iterdir()
+                             if item.is_dir() and not item.name.startswith('.')),
+                            reverse=True)
+          versions_url = [dict(name=version, version=version, url= prefix + version)
+               for version in versions]
+
+          target_file = Path('versions.json')
+          print(json.dumps(version_url, indent=2))
+          print(target_file)
+          with target_file.open('w') as f:
+              json.dump(versions_url, f)
+
+    - name: Publish versions JSON to GitHub pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: gh-pages
+        keep_files: true
