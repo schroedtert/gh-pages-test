@@ -81,8 +81,11 @@ jobs:
           versions_url = [dict(name=version, version=version, url= prefix + version)
                for version in versions]
 
-          target_file = Path('versions.json')
-          print(json.dumps(version_url, indent=2))
+          target_dir = Path('gh-pages')
+          target_dir.mkdir(parents=True)
+          target_file = target_dir /'versions.json'
+          
+          print(json.dumps(versions_url, indent=2))
           print(target_file)
           with target_file.open('w') as f:
               json.dump(versions_url, f)
