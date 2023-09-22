@@ -27,20 +27,19 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_book_theme"
-html_static_path = ["_static"]
 html_context = {"default_mode": "light"}
-html_js_files = ['versions.js']
+
 
 html_theme_options = {
-    "switcher" : {
-        "json_url": "../version.json",
-        "version_match": "latest"
+    "switcher": {
+        "json_url": "https://schroedtert.github.io/gh-pages-test/versions.json",
+        "version_match": "foo",
     },
     "home_page_in_toc": False,
     "use_fullscreen_button": False,
     "use_issues_button": False,
     "use_download_button": False,
-    "footer_start": ["version-switcher"],
+    "primary_sidebar_end": ["version-switcher"],
 }
 
 # -- Options for EPUB output
