@@ -87,7 +87,7 @@ jobs:
               json.dump(versions_url, f)
 
     - name: Redirect stable to new release
-      if: needs.docs.outputs.docs-target != ''
+      if: needs.docs.outputs.docs-target != 'latest'
       run: |
         rm -rf stable
         ln -s ${{needs.docs.outputs.docs-target}} stable
